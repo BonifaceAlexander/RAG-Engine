@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+langchain
+langchain-openai
+langchain-community
+openai
+faiss-cpu
+numpy
+scikit-learn
+python-docx
+pdfplumber
+pandas
+openpyxl
+streamlit
+#pip install -U langchain-community

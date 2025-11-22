@@ -1,0 +1,78 @@
+Retrieval-Augmented Generation (RAG) is a technique used to enhance Large Language Models (LLMs) by providing them with external, trusted knowledge sources. 
+Instead of relying solely on pretrained model weights, RAG systems retrieve relevant documents at query time and feed them into the model as context.
+
+## Key Components of a Production-Grade RAG System
+
+1. **Document Ingestion & Preprocessing**
+   - Documents are collected from PDFs, text files, knowledge bases, or websites.
+   - Text is cleaned, normalized, and split into smaller logical chunks.
+   - Recommended chunk size: 500–700 tokens with an overlap of 100 tokens.
+
+2. **Embeddings Generation**
+   - Each chunk is converted into a numerical vector representation using OpenAI embeddings.
+   - The recommended embedding model for most applications is `text-embedding-3-large`.
+   - Embeddings help capture semantic meaning rather than just keywords.
+
+3. **Vector Storage**
+   - The vectors are stored in a vector database like ChromaDB.
+   - Chroma stores embeddings effectively and allows fast similarity search.
+   - Persistent storage ensures data survives restarts.
+
+4. **Retrieval Mechanism**
+   - When a user asks a question, the system converts the query into an embedding.
+   - The query embedding is matched against stored vectors using cosine similarity.
+   - Top-k (usually k = 5) relevant chunks are retrieved.
+
+5. **Context Assembly**
+   - Retrieved chunks are merged into a contextual prompt.
+   - Additional metadata, citations, and sources may be added.
+   - This ensures the LLM has accurate, grounded information.
+
+6. **LLM Response Generation**
+   - The prompt is fed into OpenAI’s `gpt-4o-mini` or `gpt-4.1`.
+   - The model uses reasoning + retrieved knowledge to generate an accurate response.
+
+7. **Evaluation**
+   - Systems require continuous testing and metrics.
+   - RAG evaluation includes:
+     - Faithfulness
+     - Precision
+     - Answer relevance
+     - Context recall
+
+8. **Production Considerations**
+   - Add caching to reduce API costs.
+   - Use observability tools to track retrieval quality.
+   - Version your vector database.
+   - Ensure your document ingestion pipeline handles real-time updates.
+
+## Example Concepts Stored in This Knowledge Base
+
+- RAG improves model accuracy by up to 40–60% on proprietary datasets.
+- Overlapping chunks ensure the model does not miss important contextual links.
+- Retrieval pipelines can include reranking for even more precision.
+- Structured ingestion allows domain-specific systems such as legal, finance, or healthcare RAG.
+- Dual-stage retrieval (similarity search + reranker) performs significantly better than simple cosine similarity alone.
+
+## FAQ Section
+
+**Q: What happens if no relevant documents are found?**  
+A: The LLM may hallucinate, which is why fallback filters and confidence scores are recommended.
+
+**Q: Which vector DB is best?**  
+A: Chroma is excellent for local use. Pinecone is better for scalable cloud deployments.
+
+**Q: Can RAG handle multiple file formats?**  
+A: Yes — PDFs, TXT, CSV, HTML, Word files, and even audio (using transcription) can be ingested.
+
+**Q: What is the ideal architecture for production?**  
+A: A modular system with:
+   - ingestion service  
+   - vector DB  
+   - retrieval service  
+   - LLM service  
+   - API gateway  
+   - monitoring and logs  
+
+--- 
+This dataset provides a structured, realistic knowledge base for RAG testing and evaluation.
