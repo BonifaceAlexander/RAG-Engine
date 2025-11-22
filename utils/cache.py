@@ -1,8 +1,10 @@
 import time
 from typing import Optional
 
+
 class SimpleCache:
     """A tiny in-memory cache for demo purposes."""
+
     def __init__(self, ttl: int = 300):
         self.ttl = ttl
         self.store = {}  # key -> (value, expiry)

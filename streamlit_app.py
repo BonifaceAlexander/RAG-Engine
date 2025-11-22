@@ -1,14 +1,16 @@
 # streamlit_app.py
-import streamlit as st
-import time
 import os
-from typing import Optional, List
+import time
+from typing import List, Optional
 
-from rag_pipeline import RAGEngine
+import streamlit as st
+
 from ingestion import extract_text_from_file
+from rag_pipeline import RAGEngine
 
 st.set_page_config(page_title="RAG Engine UI", layout="wide")
 st.title("Ask the RAG engine")
+
 
 # -------------------------------------------
 # Engine
@@ -16,12 +18,13 @@ st.title("Ask the RAG engine")
 def init_engine(api_key: Optional[str] = None):
     return RAGEngine(api_key=api_key)
 
+
 # Sidebar options
 st.sidebar.header("Options")
 api_key_input = st.sidebar.text_input(
     "OpenAI API Key (optional)",
     value=os.getenv("OPENAI_API_KEY") or "",
-    type="password"
+    type="password",
 )
 if api_key_input:
     os.environ["OPENAI_API_KEY"] = api_key_input
@@ -29,10 +32,15 @@ if api_key_input:
 use_openai_extract = st.sidebar.checkbox("Use OpenAI for file extraction", value=True)
 auto_ingest_uploaded = st.sidebar.checkbox("Auto-ingest uploaded files", value=True)
 
-st.sidebar.write("Key provided:", "Yes" if (api_key_input or os.getenv("OPENAI_API_KEY")) else "No")
+st.sidebar.write(
+    "Key provided:", "Yes" if (api_key_input or os.getenv("OPENAI_API_KEY")) else "No"
+)
 
 # init engine in session state
-if "engine" not in st.session_state or st.session_state.get("engine_api_key") != api_key_input:
+if (
+    "engine" not in st.session_state
+    or st.session_state.get("engine_api_key") != api_key_input
+):
     st.session_state["engine"] = init_engine(api_key_input or None)
     st.session_state["engine_api_key"] = api_key_input or None
 
@@ -45,7 +53,7 @@ st.sidebar.markdown("### Ingest files (uploads only)")
 uploaded_files = st.sidebar.file_uploader(
     "Upload files to ingest (TXT, PDF, DOCX, XLSX)",
     type=["txt", "pdf", "docx", "xlsx"],
-    accept_multiple_files=True
+    accept_multiple_files=True,
 )
 
 if uploaded_files:
@@ -83,7 +91,9 @@ if uploaded_files:
                 engine.ingest(extracted_texts)
                 doc_count = getattr(engine, "doc_count", None)
                 if doc_count is not None:
-                    st.sidebar.success(f"Ingested {len(extracted_texts)} file(s) — created ~{doc_count} chunks")
+                    st.sidebar.success(
+                        f"Ingested {len(extracted_texts)} file(s) — created ~{doc_count} chunks"
+                    )
                 else:
                     st.sidebar.success(f"Ingested {len(extracted_texts)} file(s).")
             except Exception as e:
@@ -110,7 +120,10 @@ if st.button("Get Answer"):
         st.subheader("Answer (final)")
         q_display = f"Question: {query}"
 
-        if used_fallback and (not answer or (isinstance(answer, str) and answer.strip().startswith("Context:"))):
+        if used_fallback and (
+            not answer
+            or (isinstance(answer, str) and answer.strip().startswith("Context:"))
+        ):
             a_display = "Answer: No generation from LLM (showing retrieved context)"
             if error:
                 a_display += f" (Hint: {str(error)[:160]})"
@@ -129,7 +142,9 @@ if st.button("Get Answer"):
                         st.markdown(f"--- doc {i} (score={score:.4f}) ---")
                         st.text(doc_text[:2000])
                 else:
-                    st.write("No context available. Upload and ingest files to populate the KB.")
+                    st.write(
+                        "No context available. Upload and ingest files to populate the KB."
+                    )
             except Exception as e:
                 st.write("Context not available. Error:", str(e))
 
@@ -152,4 +167,6 @@ if st.sidebar.button("Reload engine (clear & re-init)"):
         except Exception:
             pass
 
-st.caption("Note: This UI ingests only uploaded files. No default dataset is auto-ingested.")
+st.caption(
+    "Note: This UI ingests only uploaded files. No default dataset is auto-ingested."
+)

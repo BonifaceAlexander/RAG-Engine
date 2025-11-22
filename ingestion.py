@@ -23,24 +23,28 @@ _openpyxl_available = False
 
 try:
     import fitz  # PyMuPDF
+
     _pymupdf_available = True
 except Exception:
     fitz = None
 
 try:
     from pdfminer.high_level import extract_text as _pdfminer_extract_text
+
     _pdfminer_available = True
 except Exception:
     _pdfminer_extract_text = None
 
 try:
     import pandas as pd
+
     _pandas_available = True
 except Exception:
     pd = None
 
 try:
     import openpyxl  # noqa: F401
+
     _openpyxl_available = True
 except Exception:
     openpyxl = None
@@ -49,9 +53,11 @@ except Exception:
 _OPENAI_AVAILABLE = False
 try:
     from openai import OpenAI as OpenAIClient
+
     _OPENAI_AVAILABLE = True
 except Exception:
     OpenAIClient = None
+
 
 # -------------------------
 # OpenAI extraction helper
@@ -100,8 +106,11 @@ def _extract_via_openai(path: str, model: str = "gpt-4o-mini") -> str:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "input_text", "text": "Extract all readable text and tables from the provided file. Return plain text only."},
-                        {"type": "input_file", "file_id": file_id}
+                        {
+                            "type": "input_text",
+                            "text": "Extract all readable text and tables from the provided file. Return plain text only.",
+                        },
+                        {"type": "input_file", "file_id": file_id},
                     ],
                 }
             ],
@@ -128,7 +137,9 @@ def _extract_via_openai(path: str, model: str = "gpt-4o-mini") -> str:
     if not extracted:
         out = None
         try:
-            out = getattr(resp, "output", None) or (resp.get("output") if isinstance(resp, dict) else None)
+            out = getattr(resp, "output", None) or (
+                resp.get("output") if isinstance(resp, dict) else None
+            )
         except Exception:
             out = None
 
@@ -167,6 +178,7 @@ def _extract_via_openai(path: str, model: str = "gpt-4o-mini") -> str:
 
     return extracted or ""
 
+
 # -------------------------
 # Local extractors
 # -------------------------
@@ -180,6 +192,7 @@ def extract_text_from_txt(path: str) -> str:
                 return fh.read().decode("utf-8", errors="ignore")
         except Exception:
             return ""
+
 
 def extract_text_from_pdf_local(path: str) -> str:
     # PyMuPDF primary
@@ -209,6 +222,7 @@ def extract_text_from_pdf_local(path: str) -> str:
 
     return ""
 
+
 def extract_text_from_docx_local(path: str) -> str:
     """
     Dependency-free docx extractor:
@@ -217,13 +231,13 @@ def extract_text_from_docx_local(path: str) -> str:
     Returns '' on any failure.
     """
     try:
-        import zipfile
         import xml.etree.ElementTree as ET
+        import zipfile
     except Exception:
         return ""
 
     try:
-        with zipfile.ZipFile(path, 'r') as z:
+        with zipfile.ZipFile(path, "r") as z:
             if "word/document.xml" not in z.namelist():
                 return ""
             raw = z.read("word/document.xml")
@@ -240,6 +254,7 @@ def extract_text_from_docx_local(path: str) -> str:
     except Exception:
         return ""
 
+
 def extract_text_from_xlsx_local(path: str) -> str:
     if not (_pandas_available and _openpyxl_available):
         raise RuntimeError("pandas/openpyxl not available for xlsx extraction.")
@@ -254,10 +269,13 @@ def extract_text_from_xlsx_local(path: str) -> str:
     except Exception as e:
         raise RuntimeError(f"xlsx extraction error: {e}")
 
+
 # -------------------------
 # Top-level convenience
 # -------------------------
-def extract_text_from_file(path: str, use_openai: bool = True, openai_model: str = "gpt-4o-mini") -> str:
+def extract_text_from_file(
+    path: str, use_openai: bool = True, openai_model: str = "gpt-4o-mini"
+) -> str:
     """
     Extract text from a local file path.
     - use_openai: if True and OPENAI_API_KEY present + openai package available, will attempt OpenAI extraction first.
@@ -300,7 +318,10 @@ def extract_text_from_file(path: str, use_openai: bool = True, openai_model: str
     except Exception:
         return ""
 
-def load_texts_from_folder(folder: str, ext: Optional[str] = None, use_openai: bool = True) -> List[str]:
+
+def load_texts_from_folder(
+    folder: str, ext: Optional[str] = None, use_openai: bool = True
+) -> List[str]:
     """
     Walk folder and extract texts. Optional ext filter to keep backward compatibility.
     """
