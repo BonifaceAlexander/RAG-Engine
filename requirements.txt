@@ -12,4 +12,5 @@ pdfplumber
 pandas
 openpyxl
 streamlit
+black
 #pip install -U langchain-community
